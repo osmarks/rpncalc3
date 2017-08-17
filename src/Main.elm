@@ -84,6 +84,7 @@ evalRec expr s =
                 Subtract -> binOp (-) s
                 Multiply -> binOp (*) s
                 Divide -> binOp (/) s
+                Exponent -> binOp (^) s
 
 eval : Expr -> Result (List String) (List Float)
 eval e =

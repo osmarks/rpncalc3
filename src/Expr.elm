@@ -8,6 +8,7 @@ type Op
     | Subtract
     | Multiply
     | Divide
+    | Exponent
 
 type Expr 
     = Num Float
@@ -29,6 +30,7 @@ op =
     <|> stringIs "-" Subtract
     <|> stringIs "*" Multiply
     <|> stringIs "/" Divide
+    <|> stringIs "^" Exponent
     |> map Op
 
 group : Parser () Expr
