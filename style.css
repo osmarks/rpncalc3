@@ -1,0 +1,20 @@
+.rpncalc {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.item {
+    width: 10vw;
+    height: 10vw;
+    border: 1px solid black;
+    margin-bottom: -1px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.exprinput {
+    margin-bottom: 1vh;
+}

@@ -37,7 +37,9 @@ error err =
 
 stackItem : Float -> Html a
 stackItem n =
-    div [class "item"] [text <| toString n]
+    let asString = toString n
+        minWidth = toString (String.length asString) ++ "em"
+    in div [class "item", style [("min-width", minWidth)]] [text asString]
 
 view : Model -> Html Msg
 view model =
@@ -48,8 +50,8 @@ view model =
                 |> List.map stackItem
             Err errors ->
                 List.map error errors
-    in div [] (
-        [ input [onInput ExpressionTyped, value model.expression] []
+    in div [class "rpncalc"] (
+        [ input [onInput ExpressionTyped, value model.expression, class "exprinput"] []
         ] ++ calcOutput
     )
 
@@ -63,11 +65,17 @@ binOp f s =
         finalStack = Maybe.map (\r -> Stack.push r s2) result
     in Result.fromMaybe "Stack underflow" finalStack
 
+prepend : Stack a -> Stack a -> Stack a
+prepend from to =
+    Stack.toList from
+    |> List.foldr Stack.push to
+
 evalRec : Expr -> Stack Float -> Result String (Stack Float)
 evalRec expr s =
     case expr of
         Group es ->
-            List.foldl (\expr s -> Result.andThen (evalRec expr) s) (Ok s) es
+            List.foldl (\expr s -> Result.andThen (evalRec expr) s) (Ok Stack.initialise) es
+            |> Result.map (\newStack -> prepend newStack s) -- prepend new stack's contents to old stack
         Num n ->
             Ok (Stack.push n s)
         Op o ->
