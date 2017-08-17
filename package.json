@@ -1,0 +1,16 @@
+{
+  "name": "rpncalc",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "build": "webpack -p",
+    "dev": "webpack-dev-server"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "elm-webpack-loader": "^4.3.1",
+    "webpack": "^3.5.4",
+    "webpack-dev-server": "^2.7.1"
+  }
+}
