@@ -55,20 +55,35 @@ view model =
         ] ++ calcOutput
     )
 
--- Run a binary operation on a stack - returns updated stack or an error
-binOp : (Float -> Float -> Float) -> Stack Float -> Result String (Stack Float)
-binOp f s =
-    let (maybeX, s1) = Stack.pop s
-        (maybeY, s2) = Stack.pop s1
-        maybeXY = Maybe.map2 (,) maybeX maybeY
-        result = Maybe.map (\(x, y) -> f y x) maybeXY -- x and y swapped round - this makes "5 1 /" become 5 instead of 0.2.
-        finalStack = Maybe.map (\r -> Stack.push r s2) result
-    in Result.fromMaybe "Stack underflow" finalStack
+listToStack : List a -> Stack a
+listToStack =
+    List.foldr Stack.push Stack.initialise
+
+prependList : List a -> Stack a -> Stack a
+prependList from to =
+    List.foldr Stack.push to from
 
 prepend : Stack a -> Stack a -> Stack a
 prepend from to =
-    Stack.toList from
-    |> List.foldr Stack.push to
+    prependList (Stack.toList from) to
+
+type alias StackFunction = Stack Float -> Result String (Stack Float)
+
+-- Runs a binary operation which returns a list on a stack
+binListOutOp : (Float -> Float -> List Float) -> StackFunction
+binListOutOp f s =
+    let
+        (maybeX, s1) = Stack.pop s
+        (maybeY, s2) = Stack.pop s1
+    in Maybe.map2 (,) maybeX maybeY
+       |> Maybe.map (\(x, y) -> f y x) -- x and y swapped round - this makes "5 1 /" become 5 instead of 0.2.
+       |> Maybe.map (\r -> prependList r s2)
+       |> Result.fromMaybe "Stack underflow"
+
+-- Runs a binary operation on a stack
+binOp : (Float -> Float -> Float) -> StackFunction
+binOp f =
+    binListOutOp (\x y -> f x y |> List.singleton)
 
 evalRec : Expr -> Stack Float -> Result String (Stack Float)
 evalRec expr s =
@@ -85,6 +100,10 @@ evalRec expr s =
                 Multiply -> binOp (*) s
                 Divide -> binOp (/) s
                 Exponent -> binOp (^) s
+                Range ->
+                    binListOutOp (\x y -> 
+                        List.range (floor x) (floor y)
+                        |> List.map toFloat) s
 
 eval : Expr -> Result (List String) (List Float)
 eval e =
