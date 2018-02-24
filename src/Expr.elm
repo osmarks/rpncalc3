@@ -1,52 +1,46 @@
-module Expr exposing (Expr(..), Op(..), parse)
+module Expr exposing (Expr(..), OpName, parse)
 
 import Combine exposing (..)
 import Combine.Num as Num
+import Combine.Char as Char
 
-type Op
-    = Add
-    | Subtract
-    | Multiply
-    | Divide
-    | Exponent
-    | Range
+type alias OpName = String
 
 type Expr 
-    = Num Float
-    | Op Op
+    = Num Int
+    | Op OpName
     | Group (List Expr)
 
 num : Parser () Expr
 num =
-    (Num <$> Num.float <|> Num << toFloat <$> Num.int)
-    <?> "expected a number (int or float)"
+    (Num <$> Num.int)
+    <?> "expected a number (int)"
 
-stringIs : String -> a -> Parser s a
-stringIs str val =
-    string str *> succeed val
+acceptableOperatorName : Parser () String
+acceptableOperatorName =
+    regex "[A-Za-z\\^%*$£!@#~.,=+-_;:/\\\\]*"
 
 op : Parser () Expr
 op =
-    stringIs "+" Add
-    <|> stringIs "-" Subtract
-    <|> stringIs "*" Multiply
-    <|> stringIs "/" Divide
-    <|> stringIs "^" Exponent
-    <|> stringIs "range" Range
+    acceptableOperatorName
     |> map Op
 
 group : Parser () Expr
 group =
-    between (string "(") (string ")") (sepBy1 whitespace (lazy <| \_ -> parser)) -- Avoid bad recursion issues using lazy parser evaluation
+    parens (sepBy1 whitespace (lazy <| \_ -> parser)) -- Avoid "bad recursion" issues using lazy parser evaluation
     <?> "expected a group (whitespace-separated expressions between brackets)"
     |> map Group
 
 parser : Parser () Expr
 parser =
-    (lazy <| \_ -> group) <|> op <|> num
+    (lazy <| \_ -> group) <|> num <|> op
 
-parse : String -> Result (List String) Expr
+convertErrorList : List String -> String
+convertErrorList =
+    List.intersperse " or " >> String.concat
+
+parse : String -> Result String Expr
 parse =
     Combine.parse parser
-    >> Result.mapError (\(_, _, errorList) -> errorList)
-    >> Result.map (\(_, _, expr) -> expr) -- Convert errors/results to nicer format
+    >> Result.mapError (\(_, _, errorList) -> convertErrorList errorList) -- Convert error data into only the error message
+    >> Result.map (\(_, _, data) -> data) -- Drop irrelevant parse data
