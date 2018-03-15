@@ -21,3 +21,7 @@ pick pred stack qty =
             |> Result.map (\v -> (newStack, v))
         else
             Err <| qty - num
+
+pop : List a -> Maybe (a, List a)
+pop l = 
+    List.head l |> Maybe.map (\h -> (h, List.tail l |> Maybe.withDefault []))

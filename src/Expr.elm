@@ -1,20 +1,19 @@
-module Expr exposing (Expr(..), OpName, parse)
+module Expr exposing (Expr(..), parse)
 
 import Combine exposing (..)
 import Combine.Num as Num
-import Combine.Char as Char
-
-type alias OpName = String
+import BigInt exposing (..)
 
 type Expr 
-    = Num Int
-    | Op OpName
+    = Float Float
+    | Int BigInt
+    | Op String
     | Group (List Expr)
 
 num : Parser () Expr
 num =
-    (Num <$> Num.int)
-    <?> "expected a number (int)"
+    (Float <$> Num.float) <|> (Int << Maybe.withDefault (BigInt.fromInt 0) << BigInt.fromString <$> regex "\\d+")
+    <?> "expected a number (float or int)"
 
 acceptableOperatorName : Parser () String
 acceptableOperatorName =
