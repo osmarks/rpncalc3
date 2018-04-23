@@ -117,7 +117,7 @@ displayDocs : Dict String String -> List (Html a)
 displayDocs docs =
     let
         docsL = Dict.toList docs
-        entry (op, desc) = div [class "op"] 
+        entry (op, desc) = div [class "op-docs"] 
             [ span [class "op-name", style [("background-color", Hashbow.hashbow op)]] [text op]
             , span [class "op-desc"] [text desc]
             ]
@@ -134,12 +134,12 @@ view model =
             Err outputError ->
                 [error outputError]
     in div [class "rpncalc"] (
-        [ div [class "stack"] stack
-        , input [onInput ExpressionTyped, value model.expression, class "exprinput", autofocus True, placeholder "Expression"] []
+        [ input [onInput ExpressionTyped, value model.expression, class "exprinput", autofocus True, placeholder "Expression"] []
         , div [class "config-panel"] 
             [ formatControl model.outputSetting |> Html.map SwitchOutputConf
             , floatingPointControl model.floatingPointControl |> Html.map AdjustFloatingPointControl
             ]
+        , div [class "stack"] stack
         , div [class "docs"] (displayDocs Ops.opDocs)
         ]
     )

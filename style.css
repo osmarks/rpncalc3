@@ -5,6 +5,11 @@
     flex-direction: column;
 }
 
+.stack {
+    margin-top: 5vh;
+    margin-bottom: 5vh;
+}
+
 .item {
     min-width: 10em;
     min-height: 10em;
@@ -70,7 +75,7 @@ hr {
     flex-wrap: wrap;
 }
 
-.op {
+.op-docs {
     background: #8cb7c6;
     display: flex;
     align-items: center;
